@@ -1110,7 +1110,7 @@ echo '</div>';
 				echo "</thead>";
 				echo '<tbody>';
 				$c = 0;
-				$csv = implode(',',$headerkey)."\n";
+				$csv = 'hash,'.implode(',',$headerkey)."\n"; // RT Wolf's addition
 				foreach ($tr[$k] as $data)
 				{
 					$c++;
@@ -1125,7 +1125,7 @@ echo '</div>';
 						//echo '<pre>'.print_r($data,true).'</pre>';exit;
 						if(!strlen($data["Email"]))
 						{
-							$tcsv = array($data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]);
+							$tcsv = array($data['hash'], $data["Sold Time"],$data["orderdetails"]["name"],$data["orderdetails"]["email"]); // RT Wolf added the first item there
 							$csv .= implode(',',$tcsv)."\n";
 						}
 						else
@@ -1142,7 +1142,7 @@ echo '</div>';
 									$tcsv .= '"'.$data[$key].'",';
 								}
 							}
-							$csv .= substr($tcsv,0,-1)."\n";
+							$csv .= $data['hash'].','.substr($tcsv,0,-1)."\n"; // RT Wolf's addition
 						}
 					}
 					else
@@ -1164,7 +1164,7 @@ echo '</div>';
 								$tcsv .= '"'.$data[$key].'",';
 							}
 						}
-						$csv .= substr($tcsv,0,-1)."\n";
+						$csv .= $data['hash'].','.substr($tcsv,0,-1)."\n"; // RT Wolf's addition
 					}
 					echo '</tr>';
 				}
@@ -2165,7 +2165,7 @@ echo '</div>';
 					$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash["hash"];
 					
 					$href = '<a href="' . $url . '">' . $hash["name"] . '</a>';
-					$emaillinks .= 'Ticket ' . $c . ': '.$hash["name"].' - ' . $url . "\r\n";
+					$emaillinks .= '<br />' . 'Ticket ' . $c . ': '.$hash["name"].' - ' . $url . "\r\n";
 					$replaceThankYou .= '<li>Ticket ' . $c . ': ' . $href . '</li>';
 
 				}
@@ -2175,7 +2175,22 @@ echo '</div>';
 				
 				$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 				$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
-				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
+				
+				/* RT Wolf's addition */
+				$qr_codes = "";
+				foreach ($tickethashes as $hash) {
+					$qr_codes .= '<br /><img src="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl='.$hash['hash'].'" title="'.$hash['hash'].'" />';
+				}
+
+				$messages_rtwolf = str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]);
+				$messages_rtwolf = str_replace('[qrcodes]', $qr_codes, $messages_rtwolf);
+
+
+				wp_mail($order["email"], $o["messages"]["messageEmailSubj"], $messages_rtwolf, $tohead.$headers."Content-type: text/html");
+
+
+				// wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
+				/* RT Wolf's addition */
 				
 				$ordersummarymsg = "Order Placed\r\n";
 				$ordersummarymsg .= $order["name"] . ' <' . $order["email"] . '> ordered '.$c.' tickets for '.eventTicketingSystem::currencyFormat($order["total"])."\r\n\r\n";
