@@ -745,7 +745,19 @@ echo '</div>';
 			//$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
 			$headers = 'From: ' . $o["messages"]["messageEmailFromName"] . ' <' . $o["messages"]["messageEmailFromEmail"] . '>' . "\r\n";
 			$headers .= 'Bcc: ' . $o["messages"]["messageEmailBcc"] . "\r\n";
-			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
+			/* RT Wolf's addition */
+			$qr_codes = "";
+			foreach ($tickethashes as $hash) {
+				$qr_codes .= '<br /><img src="https://chart.googleapis.com/chart?chs=300x300&cht=qr&chl='.$hash['hash'].'" title="'.$hash['hash'].'" />';
+			}
+
+			$messages_rtwolf = str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]);
+			$messages_rtwolf = str_replace('[qrcodes]', $qr_codes, $messages_rtwolf);
+
+
+			wp_mail($order["email"], $o["messages"]["messageEmailSubj"], $messages_rtwolf, $tohead.$headers."Content-type: text/html");
+				
+			// wp_mail($order["email"], $o["messages"]["messageEmailSubj"], str_replace('[ticketlinks]', $emaillinks, $o["messages"]["messageEmailBody"]), $tohead.$headers);
 			
 			$ordersummarymsg = "Order Placed\r\n";
 			
