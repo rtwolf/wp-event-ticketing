@@ -739,7 +739,7 @@ echo '</div>';
 			{
 				$c++;
 				$url = $o["registrationPermalink"].(strstr($o["registrationPermalink"], '?') ? '&' : '?').'tickethash='.$hash["hash"];
-				$emaillinks .= 'Ticket ' . $c . ': '.$hash["name"].' - ' . $url . "\r\n";
+				$emaillinks .= '<br />Ticket ' . $c . ': '.$hash["name"].' - ' . $url . "\r\n";
 			}
 
 			//$tohead = 'To: ' . $order["name"] . ' <' . $order["email"] . '>' . "\r\n";
